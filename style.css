@@ -70,10 +70,9 @@ body {
     background-color: #efefef;
 }
 
-.btn.equal:hover {
-    background-color: rgb(155 200 237);
-}
-
 .btn.gray:hover {
     background-color: #c7c7c7;
+}
+.btn.equal:hover {
+    background-color: rgb(155 200 237);
 }
