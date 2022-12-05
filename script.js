@@ -204,10 +204,6 @@ const Calculator = {
     addDot() {
         this.removeActiveBtn();
 
-        if (!this.firstDigit && this.result) {
-            this.firstDigit = this.result;
-        }
-
         if (!this.operator && !this.firstDigit) {
             this.firstDigit = '0.';
             screen.textContent = this.firstDigit;
