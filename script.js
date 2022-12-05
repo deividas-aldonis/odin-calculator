@@ -1,412 +1,311 @@
-const buttons = document.querySelector('.buttons');
-const expressionDisplay = document.querySelector('.top');
-const resultDisplay = document.querySelector('.bottom');
+const buttonGrid = document.querySelector('.button-grid');
+const screen = document.querySelector('.screen');
 
 const Calculator = {
-    expression: [],
-    result: null,
+    firstDigit: null,
+    secondDigit: null,
+    operator: null,
+    tempOperator: null,
+    tempDigit: null,
     reset: false,
-    error: false,
+    _error: false,
+    _result: null,
 
-    get isOperatorPresent() {
-        if (this.expression.length > 1) {
-            return true;
+    get error() {
+        return this._error;
+    },
+    set error(error) {
+        if (error) {
+            this.firstDigit = null;
+            this.secondDigit = null;
+            this.operator = null;
+            this.tempDigit = null;
+            this.tempOperator = null;
+            this.reset = false;
+            this._error = false;
+
+            screen.textContent = 'Error';
         }
-        return false;
-    },
-    get isFirstDigitDefined() {
-        if (typeof this.expression[0] === 'undefined') {
-            return false;
-        }
-        return true;
-    },
-    get isSecondDigitDefined() {
-        if (typeof this.expression[2] === 'undefined') {
-            return false;
-        }
-        return true;
-    },
-    get firstDigit() {
-        return this.expression[0];
-    },
-    get secondDigit() {
-        return this.expression[2];
-    },
-    get expressionLength() {
-        return this.expression.length;
-    },
-    get operator() {
-        return this.expression[1];
     },
 
-    set setFirstDigit(digit) {
-        this.expression[0] = digit;
+    get result() {
+        return this._result;
     },
-    set setSecondDigit(digit) {
-        this.expression[2] = digit;
-    },
-    set setOperator(operator) {
-        this.expression[1] = operator;
-    },
-    set setEquals(position) {
-        this.expression[position] = '=';
-    },
-    set setResult(result) {
-        this.result = result;
-    },
-    set setExpression(expression) {
-        this.expression = expression;
-    },
-    set setError(boolean) {
-        this.error = boolean;
-    },
-    set setReset(boolean) {
-        this.reset = boolean;
-    },
-
-    displayExpression(type, expression) {
-        expressionDisplay[type] = expression;
-    },
-    displayResult(result) {
-        resultDisplay.textContent = result;
-    },
-    isFirstDigit() {
-        if (this.expression.length > 1) {
-            return false;
-        }
-        return true;
-    },
-    removeTrailingZeros() {
-        this.setExpression = this.expression.map((x, index) => {
-            if (index === 0 || index === 2) {
-                return parseFloat(x).toString();
-            }
-            return x;
-        });
-    },
-    resetOnEqualsOrError() {
-        this.setExpression = [];
-        this.setResult = null;
-
-        if (this.reset) this.setReset = false;
-        if (this.error) this.setError = false;
-
-        this.displayExpression('innerHTML', '&#8203');
-    },
-    resetOnError() {
-        this.setExpression = [];
-        this.setResult = null;
-        this.setError = false;
-        this.displayExpression('innerHTML', '&#8203');
-    },
-
-    addNumber(inputNumber) {
-        if (this.reset || this.error) this.resetOnEqualsOrError();
-
-        if (!this.isOperatorPresent) {
-            if (this.isFirstDigitDefined && this.firstDigit !== '0') {
-                this.setFirstDigit = this.firstDigit + inputNumber;
-            } else {
-                this.setFirstDigit = inputNumber;
-            }
-
-            this.setResult = this.firstDigit;
+    set result(result) {
+        if (!Number.isNaN(result)) {
+            this._result = String(parseFloat(Number(result).toFixed(10)));
+            screen.textContent = this._result;
         } else {
-            if (this.isSecondDigitDefined && this.secondDigit !== '0') {
-                this.setSecondDigit = this.secondDigit + inputNumber;
+            this._result = result;
+        }
+    },
+
+    removeActiveBtn() {
+        document.querySelectorAll('.operator').forEach((btn) => btn.classList.remove('active'));
+    },
+    addActiveBtn(operator) {
+        document.querySelector(`[data-operator="${operator}"]`).classList.add('active');
+    },
+    addNumber(inputNum) {
+        this.removeActiveBtn();
+
+        if (this.reset) {
+            this.result = null;
+            this.reset = false;
+        }
+
+        if (!this.operator) {
+            if (!this.firstDigit) this.firstDigit = '0';
+
+            if (this.firstDigit === '0') {
+                this.firstDigit = inputNum;
+            } else if (
+                this.firstDigit.length === 2 &&
+                this.firstDigit[0] === '-' &&
+                this.firstDigit[1] === '0'
+            ) {
+                this.firstDigit = `-${inputNum}`;
             } else {
-                this.setSecondDigit = inputNumber;
+                this.firstDigit += inputNum;
             }
-            this.setResult = this.secondDigit;
+            screen.textContent = this.firstDigit;
         }
 
-        this.displayResult(this.result);
+        if (this.operator) {
+            if (!this.secondDigit) this.secondDigit = '0';
+
+            if (this.secondDigit === '0') {
+                this.secondDigit = inputNum;
+            } else if (
+                this.secondDigit.length === 2 &&
+                this.secondDigit[0] === '-' &&
+                this.secondDigit[1] === '0'
+            ) {
+                this.secondDigit = `-${inputNum}`;
+            } else {
+                this.secondDigit += inputNum;
+            }
+            screen.textContent = this.secondDigit;
+        }
     },
-    getResult() {
-        let result;
-
-        if (!this.secondDigit) this.setSecondDigit = this.firstDigit;
-        if (this.operator === '/' && this.secondDigit === '0') return 'Cannot divide by zero';
-
-        switch (this.operator) {
-            case '+':
-                result = +this.firstDigit + +this.secondDigit;
-                break;
-            case '-':
-                result = +this.firstDigit - +this.secondDigit;
-                break;
-            case '/':
-                result = +this.firstDigit / +this.secondDigit;
-                break;
-            case '*':
-                result = +this.firstDigit * +this.secondDigit;
-                break;
-            default:
-                result = 'Error';
+    addOperator(operator) {
+        if (!this.firstDigit && this.result) {
+            this.firstDigit = this.result;
         }
 
-        return parseFloat(result.toFixed(10)).toString();
+        if (this.reset) this.reset = false;
+
+        if (this.tempDigit && this.tempOperator) {
+            this.tempDigit = null;
+            this.tempOperator = null;
+        }
+
+        if (!this.secondDigit) this.operator = operator;
+
+        if (this.secondDigit) {
+            this.operate();
+            this.operator = operator;
+            this.firstDigit = this.result;
+            this.secondDigit = null;
+        }
+
+        this.removeActiveBtn();
+        this.addActiveBtn(operator);
     },
-    performActionBasedOnOperator(operator) {
-        if (this.error) this.resetOnError();
-
-        this.setReset = false;
-        this.removeTrailingZeros();
-
-        if (!this.isOperatorPresent) {
-            if (!this.isFirstDigitDefined) {
-                this.setFirstDigit = this.result ? parseFloat(this.result).toString() : '0';
-            }
-
-            this.setOperator = operator;
-            this.setResult = this.firstDigit;
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(this.result);
-        } else {
-            if (this.expressionLength === 2) {
-                this.setOperator = operator;
-                this.displayExpression('textContent', this.expression.join(' '));
+    operate() {
+        if (this.operator === '+') {
+            this.result = Number(this.firstDigit) + Number(this.secondDigit);
+        } else if (this.operator === '-') {
+            this.result = Number(this.firstDigit) - Number(this.secondDigit);
+        } else if (this.operator === '/') {
+            const secondDigit = String(parseFloat(this.secondDigit));
+            if (secondDigit === '0') {
+                this.error = true;
                 return;
             }
-
-            const result = this.getResult();
-
-            if (Number.isNaN(result)) {
-                this.setEquals = 3; // this is position, where to insert equals ["1", "+", "3", "="] || ["1", "="] should be 1.
-                this.displayExpression('textContent', this.expression.join(' '));
-                this.displayResult(result);
-                this.setError = true;
-                return;
-            }
-
-            this.setExpression = [result, operator];
-            this.setResult = result;
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(result);
+            this.result = Number(this.firstDigit) / Number(this.secondDigit);
+        } else if (this.operator === '*') {
+            this.result = Number(this.firstDigit) * Number(this.secondDigit);
         }
     },
+    equal() {
+        this.removeActiveBtn();
 
-    equals() {
-        if (this.error) this.resetOnError();
-        this.removeTrailingZeros();
+        if (!this.firstDigit && this.result) {
+            this.firstDigit = this.result;
+            this.result = null;
+        }
 
-        if (!this.isOperatorPresent) {
-            if (!this.isFirstDigitDefined) {
-                this.setExpression = ['0', '='];
-                this.setResult = this.firstDigit;
-            } else {
-                this.setEquals = 1;
-                this.setResult = this.firstDigit;
-            }
+        if (!this.firstDigit && !this.operator) return;
 
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(this.result);
-            this.setReset = true;
-        } else if (this.expressionLength === 2) {
-            if (this.operator === '=') return;
+        if (!this.firstDigit && this.operator && !this.secondDigit) {
+            this.firstDigit = '0';
+            this.secondDigit = '0';
 
-            const result = this.getResult();
+            this.operate();
+            if (this.error) return;
 
-            if (Number.isNaN(result)) {
-                this.setError = true;
-            } else {
-                this.setReset = true;
-            }
+            this.tempOperator = this.operator;
+            this.tempDigit = this.secondDigit;
+            this.operator = null;
+            this.firstDigit = null;
+            this.secondDigit = null;
+            this.reset = true;
+        } else if (!this.firstDigit && this.operator && this.secondDigit) {
+            this.firstDigit = '0';
 
-            this.setExpression = [this.firstDigit, this.operator, this.firstDigit, '='];
-            this.setResult = result;
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(this.result);
-        } else if (this.expressionLength === 3) {
-            const result = this.getResult();
+            this.operate();
+            if (this.error) return;
 
-            if (Number.isNaN(result)) {
-                this.setError = true;
-            } else {
-                this.setReset = true;
-            }
+            this.tempOperator = this.operator;
+            this.tempDigit = this.secondDigit;
+            this.operator = null;
+            this.firstDigit = null;
+            this.secondDigit = null;
+            this.reset = true;
+        } else if (this.firstDigit && !this.operator && !this.tempDigit) {
+            this.result = this.firstDigit;
+            this.firstDigit = null;
+        } else if (this.firstDigit && this.operator && !this.secondDigit) {
+            this.secondDigit = this.firstDigit;
 
-            this.setEquals = 3;
-            this.setResult = result;
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(this.result);
-        } else if (this.expressionLength === 4) {
-            const oldResult = this.getResult();
-            const newResult = this.getResult();
-            if (Number.isNaN(oldResult) || Number.isNaN(newResult)) {
-                this.setError = true;
-            } else {
-                this.setReset = true;
-            }
-            this.setFirstDigit = oldResult;
-            this.setResult = newResult;
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(this.result);
+            this.operate();
+            if (this.error) return;
+
+            this.tempDigit = this.secondDigit;
+            this.tempOperator = this.operator;
+            this.operator = null;
+            this.firstDigit = null;
+            this.secondDigit = null;
+            this.reset = true;
+        } else if (this.firstDigit && this.secondDigit) {
+            this.operate();
+            if (this.error) return;
+
+            this.tempDigit = this.secondDigit;
+            this.tempOperator = this.operator;
+            this.operator = null;
+            this.firstDigit = null;
+            this.secondDigit = null;
+            this.reset = true;
+        } else if (this.firstDigit && this.tempDigit && this.tempOperator) {
+            this.secondDigit = this.tempDigit;
+            this.operator = this.tempOperator;
+
+            this.operate();
+            if (this.error) return;
+
+            this.operator = null;
+            this.firstDigit = null;
+            this.secondDigit = null;
+            this.reset = true;
         }
     },
     addDot() {
-        if (this.reset || this.error) this.resetOnEqualsOrError();
+        this.removeActiveBtn();
 
-        if (!this.isOperatorPresent) {
-            if (!this.isFirstDigitDefined) {
-                this.setFirstDigit = '0.';
-                this.setResult = this.firstDigit;
-                this.displayResult(this.result);
-            } else {
-                const includesDot = this.firstDigit.includes('.');
-                if (includesDot) return;
-
-                this.setFirstDigit = `${this.firstDigit}.`;
-                this.setResult = this.firstDigit;
-                this.displayResult(this.result);
-            }
-        } else if (!this.isSecondDigitDefined) {
-            this.setSecondDigit = '0.';
-            this.setResult = this.secondDigit;
-            this.displayResult(this.result);
-        } else {
-            const includesDot = this.secondDigit.includes('.');
-            if (includesDot) return;
-
-            this.setSecondDigit = `${this.secondDigit}.`;
-            this.setResult = this.secondDigit;
-            this.displayResult(this.result);
+        if (!this.firstDigit && this.result) {
+            this.firstDigit = this.result;
         }
-    },
-    delete() {
-        if (this.expressionLength === 0 && !this.result) return;
 
-        if (this.expression.includes('=')) {
-            this.setExpression = [];
-            this.displayExpression('innerHTML', '&#8203');
-        } else if (this.expressionLength === 1) {
-            if (this.firstDigit.length === 1) {
-                this.setFirstDigit = '0';
-            } else if (this.firstDigit.length > 0) {
-                if (this.firstDigit[0] === '-' && this.firstDigit.length === 2) {
-                    this.expression[0] = '0';
-                } else {
-                    this.setFirstDigit = this.firstDigit.slice(0, -1);
-                }
-            }
-
-            this.setResult = this.firstDigit;
-            this.displayResult(this.result);
-        } else if (this.expressionLength === 3) {
-            if (this.secondDigit.length === 1) {
-                this.setSecondDigit = '0';
-            } else if (this.secondDigit.length > 0) {
-                if (this.secondDigit[0] === '-' && this.secondDigit.length === 2) {
-                    this.setSecondDigit = '0';
-                } else {
-                    this.setSecondDigit = this.secondDigit.slice(0, -1);
-                }
-            }
-
-            this.setResult = this.secondDigit;
-            this.displayResult(this.result);
+        if (!this.operator && !this.firstDigit) {
+            this.firstDigit = '0.';
+            screen.textContent = this.firstDigit;
+        } else if (!this.operator && this.firstDigit && !this.firstDigit.includes('.')) {
+            this.firstDigit += '.';
+            screen.textContent = this.firstDigit;
+        } else if (this.operator && !this.secondDigit) {
+            this.secondDigit = '0.';
+            screen.textContent = this.secondDigit;
+        } else if (this.operator && this.secondDigit && !this.secondDigit.includes('.')) {
+            this.secondDigit += '.';
+            screen.textContent = this.secondDigit;
         }
     },
     clear() {
-        this.setExpression = [];
-        this.setResult = null;
-        this.resetAfterEquals = false;
-        this.setError = false;
-        this.displayExpression('innerHTML', '&#8203');
-        this.displayResult('0');
+        this.removeActiveBtn();
+
+        this.firstDigit = null;
+        this.secondDigit = null;
+        this.operator = null;
+        this.tempDigit = null;
+        this.tempOperator = null;
+        this.reset = false;
+        this.result = null;
+        this.error = false;
+
+        screen.textContent = '0';
     },
-    inverse() {
-        if (this.expression.includes('=')) {
-            if (this.result.includes('-')) {
-                this.setResult = this.result.slice(1);
-            } else {
-                this.setResult = `-${this.result}`;
-            }
+    addMinus() {
+        this.removeActiveBtn();
 
-            this.setExpression = [this.result];
-
-            this.displayExpression('textContent', this.expression.join(' '));
-            this.displayResult(this.result);
-        } else if (this.expressionLength === 1) {
-            if (!this.isFirstDigitDefined || parseFloat(this.firstDigit).toString() === '0') return;
-
-            if (this.firstDigit.includes('-')) {
-                this.setFirstDigit = this.firstDigit.slice(1);
-            } else {
-                this.setFirstDigit = `-${this.firstDigit}`;
-            }
-
-            this.displayResult(this.firstDigit);
-        } else if (this.expressionLength === 3) {
-            if (!this.isSecondDigitDefined || parseFloat(this.secondDigit).toString() === '0')
-                return;
-
-            if (this.secondDigit.includes('-')) {
-                this.setSecondDigit = this.secondDigit.slice(1);
-            } else {
-                this.setSecondDigit = `-${this.secondDigit}`;
-            }
-
-            this.displayResult(this.secondDigit);
+        if (!this.operator && !this.firstDigit) {
+            this.firstDigit = '-0';
+            screen.textContent = this.firstDigit;
+        } else if (!this.operator && this.firstDigit.includes('-')) {
+            this.firstDigit = this.firstDigit.slice(1);
+            screen.textContent = this.firstDigit;
+        } else if (!this.operator && !this.firstDigit.includes('-')) {
+            this.firstDigit = `-${this.firstDigit}`;
+            screen.textContent = this.firstDigit;
+        } else if (this.operator && !this.secondDigit) {
+            this.secondDigit = '-0';
+            screen.textContent = this.secondDigit;
+        } else if (this.operator && this.secondDigit.includes('-')) {
+            this.secondDigit = this.secondDigit.slice(1);
+            screen.textContent = this.secondDigit;
+        } else if (this.secondDigit && !this.secondDigit.includes('-')) {
+            this.secondDigit = `-${this.secondDigit}`;
+            screen.textContent = this.secondDigit;
         }
     },
     percent() {
-        if (this.expressionLength === 1) {
-            if (this.isFirstDigitDefined) {
-                this.setFirstDigit = parseFloat((this.firstDigit / 100).toFixed(10));
-                this.setResult = this.firstDigit;
-                this.displayResult(this.result);
-            }
-        } else if (this.expressionLength === 3) {
-            if (this.isSecondDigitDefined) {
-                this.setSecondDigit = parseFloat((this.secondDigit / 100).toFixed(10));
-                this.setResult = this.secondDigit;
-                this.displayResult(this.result);
-            }
-        } else if (this.expressionLength === 4) {
-            const result = this.getResult();
+        this.removeActiveBtn();
 
-            if (Number.isNaN(result)) {
-                this.setError = true;
-                this.setResult = result;
-            } else {
-                this.setResult = parseFloat((result / 100).toFixed(10));
-                this.setExpression = [this.result];
-                this.displayExpression('innerHTML', '&#8203');
-            }
+        if (!this.firstDigit && this.result) {
+            this.firstDigit = this.result;
+        }
 
-            this.displayResult(this.result);
+        if (!this.operator && !this.firstDigit) {
+            this.firstDigit = '0.01';
+            this.result = this.firstDigit;
+        } else if (!this.operator && this.firstDigit) {
+            this.firstDigit = String(Number(this.firstDigit) / 100);
+            this.result = this.firstDigit;
+        } else if (this.operator && !this.secondDigit) {
+            this.secondDigit = '0.01';
+            this.result = this.secondDigit;
+        } else if (this.operator && this.secondDigit) {
+            this.secondDigit = String(Number(this.secondDigit) / 100);
+            this.result = this.secondDigit;
         }
     }
 };
 
-buttons.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn');
+buttonGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
     if (!btn) return;
 
-    const { number, operator, equals, dot, del, clear, inverse, percent } = btn.dataset;
-
-    if (number) Calculator.addNumber(number);
-    else if (operator) Calculator.performActionBasedOnOperator(operator);
-    else if (equals) Calculator.equals();
-    else if (dot) Calculator.addDot();
-    else if (del) Calculator.delete();
-    else if (clear) Calculator.clear();
-    else if (inverse) Calculator.inverse();
-    else if (percent) Calculator.percent();
+    if (btn.classList.contains('number')) Calculator.addNumber(btn.dataset.number);
+    else if (btn.classList.contains('operator')) Calculator.addOperator(btn.dataset.operator);
+    else if (btn.classList.contains('equal')) Calculator.equal();
+    else if (btn.classList.contains('dot')) Calculator.addDot();
+    else if (btn.classList.contains('clear')) Calculator.clear();
+    else if (btn.classList.contains('add-minus')) Calculator.addMinus();
+    else if (btn.classList.contains('percent')) Calculator.percent();
 });
 
-window.addEventListener('keyup', (e) => {
+window.addEventListener('keypress', (e) => {
+    // For some reason when event is set to keydown, firefox doesn't preventDefault so I changed it to keypress.
     const isNumber = !Number.isNaN(+e.key);
 
-    if (isNumber) {
-        Calculator.addNumber(e.key);
-    } else if (e.key === '+' || e.key === '/' || e.key === '*' || e.key === '-')
-        Calculator.performActionBasedOnOperator(e.key);
-    else if (e.key === '=' || e.key === 'Enter') Calculator.equals();
+    if (isNumber) Calculator.addNumber(e.key);
+    else if (e.key === '+' || e.key === '/' || e.key === '*' || e.key === '-') {
+        if (e.key === '/') e.preventDefault();
+        Calculator.addOperator(e.key);
+    } else if (e.key === '=' || e.key === 'Enter') Calculator.equal();
     else if (e.key === '.') Calculator.addDot();
     else if (e.key === 'Delete' || e.key === 'C' || e.key === 'c') Calculator.clear();
-    else if (e.key === 'Backspace') Calculator.delete();
-    else if (e.key === 's') Calculator.inverse();
+    else if (e.key === 's') Calculator.addMinus();
     else if (e.key === '%') Calculator.percent();
 });

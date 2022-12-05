@@ -11,44 +11,33 @@
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;400;700&display=swap"
             rel="stylesheet"
         />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-            integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-        />
         <link rel="stylesheet" href="style.css" />
         <script src="script.js" defer></script>
     </head>
     <body>
         <div class="calculator">
-            <div class="screen">
-                <div class="top">&#8203;</div>
-                <div class="bottom">0</div>
-            </div>
+            <div class="screen">0</div>
 
-            <div class="buttons">
-                <div class="btn gray" data-percent="percent">%</div>
-                <div class="btn gray" data-clear="clear">C</div>
-                <div class="btn gray" data-del="backspace">&#8701;</div>
-                <div class="btn gray equal" data-equals="=">=</div>
-                <div class="btn white" data-number="7">7</div>
-                <div class="btn white" data-number="8">8</div>
-                <div class="btn white" data-number="9">9</div>
-                <div class="btn gray" data-operator="/">÷</div>
-                <div class="btn white" data-number="4">4</div>
-                <div class="btn white" data-number="5">5</div>
-                <div class="btn white" data-number="6">6</div>
-                <div class="btn gray" data-operator="*">x</div>
-                <div class="btn white" data-number="1">1</div>
-                <div class="btn white" data-number="2">2</div>
-                <div class="btn white" data-number="3">3</div>
-                <div class="btn gray" data-operator="+">+</div>
-                <div class="btn white" data-inverse="inverse">&pm;</div>
-                <div class="btn white" data-number="0">0</div>
-                <div class="btn white" data-dot=".">.</div>
-                <div class="btn gray" data-operator="-">-</div>
+            <div class="button-grid">
+                <button class="clear">C</button>
+                <button class="percent">%</button>
+                <button class="add-minus">&pm;</button>
+                <button class="equal equal">=</button>
+                <button class="number seven" data-number="7">7</button>
+                <button class="number eight" data-number="8">8</button>
+                <button class="number nine" data-number="9">9</button>
+                <button class="operator" data-operator="/">÷</button>
+                <button class="number four" data-number="4">4</button>
+                <button class="number five" data-number="5">5</button>
+                <button class="number six" data-number="6">6</button>
+                <button class="operator" data-operator="*">x</button>
+                <button class="number one" data-number="1">1</button>
+                <button class="number two" data-number="2">2</button>
+                <button class="number three" data-number="3">3</button>
+                <button class="operator" data-operator="+">+</button>
+                <button class="number zero" data-number="0">0</button>
+                <button class="dot">.</button>
+                <button class="operator" data-operator="-">-</button>
             </div>
         </div>
     </body>
